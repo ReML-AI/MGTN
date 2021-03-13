@@ -4,6 +4,15 @@ import scipy as sp
 from scipy.sparse import linalg
 import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-i', '--input-path', default='model/embedding/coco_glove_word2vec_80x300.pkl',
+                    type=str, help='Input Path')
+parser.add_argument('-a', '--adj-path', default='model/adjacency/coco_adj.pkl',
+                    type=str, help='Adjacency Path')
+parser.add_argument('-o', '--output-path', default='model/embedding/coco_glove_word2vec_80x300_ec.pkl',
+                    type=str, help='Output Path')
+parser.add_argument('-n', '--normalise', action='store_true', help='perform normalisation')
+parser.add_argument('-ec', '--eigenc', action='store_true', help='perform EC transformation')
 
 def load_adj(adj_file='data/coco/coco_adj.pkl'):
     result = pickle.load(open(adj_file, 'rb'))
@@ -11,17 +20,14 @@ def load_adj(adj_file='data/coco/coco_adj.pkl'):
     _nums = result['nums']
     return (_adj, _nums)
 
-
 def eigenvector_centrality(adj):
     import networkx as nx
     graph = nx.from_numpy_matrix(adj)
     centrality = nx.eigenvector_centrality(graph)
     return np.array(tuple(centrality.values()))
 
-
 def rowmul(arr2d, arr1d):
     return np.array(arr2d) * np.array(arr1d)[:, None]
-
 
 def normalize(mx):
     """Row-normalize sparse matrix"""
@@ -32,11 +38,9 @@ def normalize(mx):
     mx = r_mat_inv.dot(mx)
     return mx
 
-
 def eigs(adj):
     eigenvalue, eigenvector = linalg.eigs(adj, k=1, which='LR')
     return (eigenvalue, eigenvector)
-
 
 def adjust(adj, t=0.4):
     _adj = np.array(adj)
@@ -48,18 +52,6 @@ def adjust(adj, t=0.4):
     _adj = _adj * 0.25 / (_adj.sum(0, keepdims=True) + 1e-6)
     _adj = _adj + np.identity(adj.shape[0], np.int)
     return _adj
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input-path', default='model/embedding/coco_glove_word2vec_80x300.pkl',
-                    type=str, help='Input Path')
-parser.add_argument('-a', '--adj-path', default='model/adjacency/coco_adj.pkl',
-                    type=str, help='Adjacency Path')
-parser.add_argument('-o', '--output-path', default='model/embedding/coco_glove_word2vec_80x300_ec.pkl',
-                    type=str, help='Output Path')
-parser.add_argument('-n', '--normalise', action='store_true', help='perform normalisation')
-parser.add_argument('-ec', '--eigenc', action='store_true', help='perform EC transformation')
-
 
 def main():
     global args
