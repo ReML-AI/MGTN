@@ -8,6 +8,7 @@ from tqdm import tqdm
 import numpy as np
 import random
 import torch.nn.functional as F
+import torchvision.models as models
 
 def download_url(url, destination=None, progress_bar=True):
     """Download a URL to a local file.
